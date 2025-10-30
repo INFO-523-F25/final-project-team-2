@@ -39,35 +39,35 @@ For this project, we will use a subset of the Million Song Dataset (MSD), a larg
 After loading a sample of the dataset into Python, here is an example structure:
 ```{python}
 import pandas as pd
-data = pd.read_hdf('msd_sample.h5', key='metadata')
+data = pd.read_csv('data/msd_subset_features.csv')
 data.shape
 ```
 
-This subset contains 10,000 songs and 54 attributes covering metadata (artist, title, year) and numerical features (tempo, energy, loudness, etc.). A preview of key variables includes:
-artist_name: name of the artist
-title: track title
-tempo: estimated beats per minute
-danceability: measure of rhythm suitability for dancing (0–1)
-energy: measure of intensity and activity (0–1)
-loudness: overall loudness in decibels
-segments_timbre: MFCC-like timbral coefficients
-segments_pitches: chroma features (harmonic structure)
-year: release year
-song_hotttnesss: popularity score (0–1)
-We chose this dataset because it combines rich audio signal features with real-world metadata, making it ideal for exploring both classification (e.g., genre prediction) and regression (e.g., popularity prediction). It also offers opportunities to learn about feature extraction from raw audio and deep learning techniques like CNNs for signal processing.
-Make sure to load the data and use inline code for some of this information.
+This subset contains 10,000 songs and 19 attributes covering metadata (artist, title, year) and numerical features (tempo, energy, loudness, etc.). A preview of key variables includes:
+
+- song_id: Unique identifier for each song (Echo Nest ID)
+- artist_name: Name of the artist
+- title: Song title
+- tempo: Estimated tempo in beats per minute (BPM)
+- danceability:  Measure of how suitable a track is for dancing (0.0 to 1.0)
+- energy: Overall energy of the song (0.0 to 1.0)
+- loudness: Overall loudness in decibels (dB)
+- year: Year of release (0 indicates unknown)
+- song_hotttnesss: Song popularity measure (0.0 to 1.0, may contain null values)
+- We chose this dataset because it combines rich audio signal features with real-world metadata, making it ideal for exploring both classification (e.g., genre prediction) and regression (e.g., popularity prediction). It also offers opportunities to learn about feature extraction from raw audio and deep learning techniques like CNNs for signal processing.
+- Make sure to load the data and use inline code for some of this information.
 
 ## Questions
 
-Can we accurately classify a song’s genre using its extracted audio features?
-What audio and metadata features are most predictive of a song’s popularity (song_hotttnesss)?
+1. Can we accurately classify a song’s genre using its extracted audio features?
+2. What audio and metadata features are most predictive of a song’s popularity (song_hotttnesss)?
 
 ## Analysis plan
 
 - Question 1 — Genre Classification
 Goal: Predict the genre label (obtained from artist_terms or merged from FMA dataset).
 Variables Used:
-danceability, energy, tempo, loudness, key, mode, time_signature, segments_timbre_mean, segments_pitches_mean, duration, year.
+danceability, energy, tempo, loudness, key, mode, time_signature, duration, year.
 Feature Engineering:
 Aggregate timbre and pitch arrays (mean, std).
 Encode categorical features (mode, key).

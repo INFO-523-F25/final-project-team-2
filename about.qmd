@@ -5,12 +5,10 @@ editor: visual
 jupyter: python3
 ---
 
-This project was developed by **[Team Name]** For [INFO 523 - Data Mining and Discovery](https://datamineaz.org/) at the University of Arizona, taught by Dr. Greg Chism. The team is comprised of the following team members.
+This project was developed by **[Team 2]** For [INFO 523 - Data Mining and Discovery](https://datamineaz.org/) at the University of Arizona, taught by Dr. Greg Chism. The team is comprised of the following team members.
 
--   Team member 1: One sentence description of Team member 1 (e.g., year, major, etc.).
+-   David Kennedy: An IT technician at a middle school in Rio Rico, AZ, who began the MSDS program in Fall 2025, holds a B.S. in Computer Science from the University of Arizona (2021).
 
--   Team member 2: One sentence description of Team member 2 (e.g., year, major, etc.).
+-   Elsie Bold: A Cloud Engineer at the University of Arizona with a B.S. in Computer Science from the University of Arizona (2023), who began pursuing a Master's degree as a non-degree seeking student in Fall 2025.
 
--   Team member 3: One sentence description of Team member 3 (e.g., year, major, etc.).
-
--   Team member 4: One sentence description of Team member 4 (e.g., year, major, etc.).
+-   Kim Rosema: An Integration Engineer at the University of Arizona with a B.S. in Information Science from the University of Arizona (2020), who began the MSDS program in Fall 2025.
