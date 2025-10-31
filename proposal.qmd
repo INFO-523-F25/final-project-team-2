@@ -95,3 +95,27 @@ Optionally, merge Spotify API audio features to cross-check and expand the datas
 
 By combining metadata and extracted audio features, this project will demonstrate how machine learning can reveal musical patterns and predict real-world outcomes such as genre and popularity.
 
+## Weekly Plan of Attack
+
+- **Week of Nov. 3: Improve Project Proposals/ Gather Data**
+  * Use peer review feedback to improve and enhance the project proposal for the instructor review on Nov. 7th.
+  * Gather more data if needed.
+- **Week of Nov. 10: Exploratory Data Analysis and Data Preprocessing**
+  * Analyze the data set and summarize its main characteristics/ types of data, finding outliers and missing values.
+  * Processing the data by cleaning and normalizing it as needed and correcting any skewness or high correlations.
+  * Create any features that may be useful in the modeling stage
+- **Week of Nov. 17: Identify Best Models to Use for the Data**
+  * Research what models will be the best fit for our data and the questions we are trying to answer.
+  * Use the models to train samples of the data and evaluation their performance 
+- **Week of Nov. 24: Begin Rigorous Testing on Chosen Models / Thanksgiving**
+  * Chose the final models to use for the project
+  * Begin training them and test the models more indepthly and rigorously.
+- **Week of Dec. 1: Continue Testing and Training of the Models**
+  * Continue the in-depth training and testing of the model and their outcomes and comparing it to our questions
+  * Start evaluating the models and their outcomes based on our questions and their accuracy.
+- **Week of Dec. 8: Creating Project Artifacts**
+  * Start work on the presentations of the project and its findings
+  * Start work on the completion final project as a whole 
+- **Week of Dec. 15: Final Project Presentations Due and Final Project Due:**
+  * Complete the project presentations, due Dec. 15.
+  * Put any finishing touches on the final project before Dec. 17 at 5pm.
