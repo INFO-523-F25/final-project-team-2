@@ -9,4 +9,4 @@
 
 data/raw/
 data/MillionSongSubset/
-*.h5
+.h5
