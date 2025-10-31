@@ -1,8 +1,8 @@
 ---
-title: "Proposal title"
+title: "Music Genre Classification & Audio Feature Analysis"
 subtitle: "Proposal"
 author: 
-  - name: "Team Name - Team member 1, Team member 2,..."
+  - name: "Team 2 - David Kennedy, Elsie Bold, Kim Rosema"
     affiliations:
       - name: "College of Information Science, University of Arizona"
 description: "Project description"
@@ -34,12 +34,64 @@ import numpy as np
 
 A brief description of your dataset including its provenance, dimensions, etc. as well as the reason why you chose this dataset.
 
-Make sure to load the data and use inline code for some of this information.
+Dataset Description
+For this project, we will use a subset of the Million Song Dataset (MSD), a large-scale collection of audio features and metadata for one million contemporary popular music tracks. The data originates from The Echo Nest, a music intelligence platform that analyzed songs and extracted detailed features such as tempo, loudness, danceability, timbre, and pitch.
+After loading a sample of the dataset into Python, here is an example structure:
+```{python}
+import pandas as pd
+data = pd.read_csv('data/msd_subset_features.csv')
+data.shape
+```
+
+This subset contains 10,000 songs and 19 attributes covering metadata (artist, title, year) and numerical features (tempo, energy, loudness, etc.). A preview of key variables includes:
+
+- song_id: Unique identifier for each song (Echo Nest ID)
+- artist_name: Name of the artist
+- title: Song title
+- tempo: Estimated tempo in beats per minute (BPM)
+- danceability:  Measure of how suitable a track is for dancing (0.0 to 1.0)
+- energy: Overall energy of the song (0.0 to 1.0)
+- loudness: Overall loudness in decibels (dB)
+- year: Year of release (0 indicates unknown)
+- song_hotttnesss: Song popularity measure (0.0 to 1.0, may contain null values)
+- We chose this dataset because it combines rich audio signal features with real-world metadata, making it ideal for exploring both classification (e.g., genre prediction) and regression (e.g., popularity prediction). It also offers opportunities to learn about feature extraction from raw audio and deep learning techniques like CNNs for signal processing.
+- Make sure to load the data and use inline code for some of this information.
 
 ## Questions
 
-The two questions you want to answer.
+1. Can we accurately classify a song’s genre using its extracted audio features?
+2. What audio and metadata features are most predictive of a song’s popularity (song_hotttnesss)?
 
 ## Analysis plan
 
--   A plan for answering each of the questions including the variables involved, variables to be created (if any), external data to be merged in (if any).
+- Question 1 — Genre Classification
+Goal: Predict the genre label (obtained from artist_terms or merged from FMA dataset).
+Variables Used:
+danceability, energy, tempo, loudness, key, mode, time_signature, duration, year.
+Feature Engineering:
+Aggregate timbre and pitch arrays (mean, std).
+Encode categorical features (mode, key).
+Modeling Approach:
+Apply dimensionality reduction (PCA).
+Train classification models: Random Forest, Gradient Boosting, and Neural Network.
+Evaluate accuracy, precision, recall, and F1-score.
+Visualization:
+Feature importance plot, confusion matrix, PCA scatter of top features.
+- Question 2 — Popularity Prediction
+Goal: Model song_hotttnesss as a continuous variable.
+Variables Used:
+Same audio features as above, plus artist_terms_weight, year, duration.
+Feature Engineering:
+Compute mean and variance of segment-level features.
+Normalize continuous variables.
+Modeling Approach:
+Linear Regression, Random Forest Regressor, and XGBoost.
+Evaluate with RMSE and R² metrics.
+Visualization:
+Correlation heatmap between features and popularity.
+Partial dependence plots to interpret influential factors.
+External Data
+Optionally, merge Spotify API audio features to cross-check and expand the dataset, especially for missing or inconsistent fields (danceability, valence, energy).
+
+By combining metadata and extracted audio features, this project will demonstrate how machine learning can reveal musical patterns and predict real-world outcomes such as genre and popularity.
+
