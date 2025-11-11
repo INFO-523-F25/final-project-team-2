@@ -22,40 +22,196 @@ jupyter: python3
 ```{python}
 #| label: load-pkgs
 #| message: false
-import numpy as np
+
+import pandas as pd
 ```
 
 ## Dataset
-
 ```{python}
 #| label: load-dataset
 #| message: false
-```
 
-A brief description of your dataset including its provenance, dimensions, etc. as well as the reason why you chose this dataset.
-
-Dataset Description
-For this project, we will use a subset of the Million Song Dataset (MSD), a large-scale collection of audio features and metadata for one million contemporary popular music tracks. The data originates from The Echo Nest, a music intelligence platform that analyzed songs and extracted detailed features such as tempo, loudness, danceability, timbre, and pitch.
-After loading a sample of the dataset into Python, here is an example structure:
-```{python}
-import pandas as pd
+# Load the Million Song Dataset subset
 data = pd.read_csv('data/msd_subset_features.csv')
-data.shape
+
+# Display basic information
+print(f"Dataset shape: {data.shape}")
+print(f"Number of songs: {data.shape[0]:,}")
+print(f"Number of features: {data.shape[1]}")
+```
+```{python}
+#| label: dataset-size-reality-check
+#| message: false
+
+# Reality check on dataset expectations
+print(f"Current dataset size: {len(data):,} songs")
+print(f"\nExpected labeled dataset after genre assignment:")
+print(f"  - Best case (80% success): {int(len(data) * 0.80):,} songs")
+print(f"  - Expected case (70% success): {int(len(data) * 0.70):,} songs")
+print(f"  - Worst case (60% success): {int(len(data) * 0.60):,} songs")
+
+print(f"\nMinimum needed for 7 genres with 200 songs each: 1,400 songs")
+print(f"Status: {'✓ FEASIBLE' if len(data) * 0.60 >= 1400 else '✗ AT RISK - may need fewer genres'}")
+
+### Dataset Description
+
+For this project, we will use a subset of the Million Song Dataset (MSD), a large-scale collection of audio features and metadata for one million contemporary popular music tracks. The data originates from The Echo Nest, a music intelligence platform that analyzed songs and extracted detailed features such as tempo, loudness, danceability, timbre, and pitch.
+
+Our subset contains **10,000 songs** and **53 attributes** covering metadata (artist, title, year) and numerical features (tempo, energy, loudness, etc.).
+```{python}
+#| label: preview-data
+#| message: false
+
+# Preview the first few rows
+print("Dataset Preview:")
+data.head()
+```
+```{python}
+#| label: data-summary
+#| message: false
+
+# Summary statistics
+print("\nKey Variables Summary:")
+key_vars = ['tempo', 'danceability', 'energy', 'loudness', 'year', 'song_hotttnesss']
+available_vars = [var for var in key_vars if var in data.columns]
+data[available_vars].describe()
 ```
 
-This subset contains 10,000 songs and 19 attributes covering metadata (artist, title, year) and numerical features (tempo, energy, loudness, etc.). A preview of key variables includes:
 
-- song_id: Unique identifier for each song (Echo Nest ID)
-- artist_name: Name of the artist
-- title: Song title
-- tempo: Estimated tempo in beats per minute (BPM)
-- danceability:  Measure of how suitable a track is for dancing (0.0 to 1.0)
-- energy: Overall energy of the song (0.0 to 1.0)
-- loudness: Overall loudness in decibels (dB)
-- year: Year of release (0 indicates unknown)
-- song_hotttnesss: Song popularity measure (0.0 to 1.0, may contain null values)
-- We chose this dataset because it combines rich audio signal features with real-world metadata, making it ideal for exploring both classification (e.g., genre prediction) and regression (e.g., popularity prediction). It also offers opportunities to learn about feature extraction from raw audio and deep learning techniques like CNNs for signal processing.
-- Make sure to load the data and use inline code for some of this information.
+**Key Variables:**
+
+- **song_id**: Unique identifier for each song (Echo Nest ID)
+- **artist_name**: Name of the artist
+- **title**: Song title
+- **tempo**: Estimated tempo in beats per minute (BPM)
+- **danceability**: Measure of how suitable a track is for dancing (0.0 to 1.0)
+- **energy**: Overall energy of the song (0.0 to 1.0)
+- **loudness**: Overall loudness in decibels (dB)
+- **year**: Year of release (0 indicates unknown)
+- **song_hotttnesss**: Song popularity measure (0.0 to 1.0, may contain null values)
+```{python}
+#| label: missing-values-check
+#| message: false
+
+# Check for missing values in key variables
+print("Missing Values Analysis:")
+print("-" * 50)
+
+key_vars = ['tempo', 'danceability', 'energy', 'loudness', 'year', 'song_hotttnesss', 
+            'artist_name', 'title', 'key', 'mode', 'time_signature', 'duration']
+available_vars = [var for var in key_vars if var in data.columns]
+
+missing_summary = []
+for var in available_vars:
+    missing_count = data[var].isna().sum()
+    missing_pct = (missing_count / len(data)) * 100
+    missing_summary.append({
+        'Variable': var,
+        'Missing Count': missing_count,
+        'Missing %': f"{missing_pct:.2f}%"
+    })
+
+missing_df = pd.DataFrame(missing_summary)
+print(missing_df.to_string(index=False))
+
+print("\n" + "-" * 50)
+print("Imputation Strategy Summary:")
+print("  • <5% missing → Median imputation")
+print("  • 5-30% missing → KNN imputation")
+print("  • song_hotttnesss → Exclude rows (target variable)")
+print("  • artist_name/title → Exclude rows (needed for merging)")
+```
+
+### Genre Labeling Strategy
+```{python}
+#| label: genre-availability-check
+#| message: false
+
+# Check what genre-related information is available
+print("Available columns for genre extraction:")
+genre_related = [col for col in data.columns if 'term' in col.lower() or 'tag' in col.lower() or 'genre' in col.lower()]
+print(genre_related if genre_related else "No direct genre columns found")
+
+# Check if artist_terms exists
+if 'artist_terms' in data.columns:
+    print("\n✅ artist_terms available - can extract genre keywords")
+    print(f"Sample artist terms: {data['artist_terms'].dropna().head(3).tolist()}")
+else:
+    print("\n⚠️ Will need to merge with external genre data")
+```
+
+Our dataset does not inherently contain genre labels. We will obtain genre classifications through the following **two-stage approach**:
+
+**Primary Method: Artist Terms Parsing**
+- Parse the `artist_terms` field which contains artist-associated tags/keywords from The Echo Nest
+- Map common terms to genre categories using a predefined taxonomy
+- Genre mapping examples:
+  - {"indie", "alternative", "indie rock"} → "Alternative Rock"
+  - {"electronic", "edm", "house", "techno"} → "Electronic"
+  - {"hip hop", "rap", "hip-hop"} → "Hip-Hop"
+
+**Backup Method: Free Music Archive (FMA) Dataset Merge**
+- For songs without `artist_terms` or ambiguous terms, merge with FMA metadata
+- Match using `artist_name` and `title` fields with fuzzy matching (85% similarity threshold)
+- FMA provides curated genre labels for ~100k tracks
+
+**Decision Criteria:**
+- If `artist_terms` contains ≥1 recognizable genre keyword → use parsed genre
+- If `artist_terms` is missing or contains no genre keywords → attempt FMA merge
+- If both methods fail → exclude song from genre classification analysis
+
+**Target Genre Categories:**
+We will consolidate into **7 major genres** to ensure adequate sample sizes:
+- Rock, Pop, Electronic, Hip-Hop/Rap, Jazz, Country, R&B/Soul
+
+**Validation Plan (Week of Nov. 10):**
+1. Parse `artist_terms` and calculate success rate (% of songs labeled)
+2. If success rate <60%, proceed with FMA merge for remaining songs
+3. Manually verify 100 random genre assignments for accuracy
+4. Calculate inter-rater agreement if multiple genre terms exist
+5. Document final genre distribution and exclusion rate
+
+**Expected Outcome:**
+- 70-85% of songs successfully labeled with genres
+- Minimum 200 songs per genre category (required for robust classification)
+- <15% of songs excluded from genre analysis due to labeling failure
+
+### Data Integration & Quality Control
+
+**Missing Value Strategy:**
+- Audio features (<5% missing): Median imputation
+- Audio features (5-30% missing): KNN imputation
+- Target variable (`song_hotttnesss`): Exclude missing values from regression (cannot impute target)
+- Metadata (artist, title): Exclude rows if missing (needed for merging)
+
+**Handling Overlapping Fields:**
+When merging MSD with external sources (FMA, Spotify), we will encounter overlapping fields. Our resolution strategy:
+
+1. **Prioritization:** MSD/Echo Nest as primary source → Spotify API as secondary → FMA for genres only
+2. **Conflict detection:** Flag songs where values differ significantly (e.g., tempo >10 BPM difference)
+3. **Validation:** Manually inspect high-conflict cases; exclude songs with >30% feature disagreements
+4. **Documentation:** Maintain provenance metadata showing data source for each field
+
+**Expected Outcomes:**
+- Final dataset: 6,000-8,000 songs with <5% missing values
+- Genre coverage: 60-80% from FMA merge
+- Popularity data: ~70% complete (7,000 songs)
+
+### Data Splitting Strategy
+
+To ensure valid model evaluation and prevent data leakage, we will split our data as follows:
+
+**Split Ratios:**
+- **Training set:** 70% - used for model training and feature engineering
+- **Validation set:** 15% - used for hyperparameter tuning and model selection
+- **Test set:** 15% - held out until final evaluation, used only once
+
+**Splitting Methodology:**
+- Use stratified splitting for Question 1 (genre classification) to maintain genre proportions
+- Use random splitting for Question 2 (popularity prediction)
+- Set random seed (42) for reproducibility
+- Perform split BEFORE any imputation or feature engineering to prevent leakage
+
 
 ## Questions
 
@@ -64,36 +220,149 @@ This subset contains 10,000 songs and 19 attributes covering metadata (artist, t
 
 ## Analysis plan
 
-- Question 1 — Genre Classification
-Goal: Predict the genre label (obtained from artist_terms or merged from FMA dataset).
-Variables Used:
-danceability, energy, tempo, loudness, key, mode, time_signature, duration, year.
-Feature Engineering:
-Aggregate timbre and pitch arrays (mean, std).
-Encode categorical features (mode, key).
-Modeling Approach:
-Apply dimensionality reduction (PCA).
-Train classification models: Random Forest, Gradient Boosting, and Neural Network.
-Evaluate accuracy, precision, recall, and F1-score.
-Visualization:
-Feature importance plot, confusion matrix, PCA scatter of top features.
-- Question 2 — Popularity Prediction
-Goal: Model song_hotttnesss as a continuous variable.
-Variables Used:
-Same audio features as above, plus artist_terms_weight, year, duration.
-Feature Engineering:
-Compute mean and variance of segment-level features.
-Normalize continuous variables.
-Modeling Approach:
-Linear Regression, Random Forest Regressor, and XGBoost.
-Evaluate with RMSE and R² metrics.
-Visualization:
-Correlation heatmap between features and popularity.
-Partial dependence plots to interpret influential factors.
-External Data
-Optionally, merge Spotify API audio features to cross-check and expand the dataset, especially for missing or inconsistent fields (danceability, valence, energy).
+To address our research questions, we will implement the following feature engineering and modeling strategy:
 
-By combining metadata and extracted audio features, this project will demonstrate how machine learning can reveal musical patterns and predict real-world outcomes such as genre and popularity.
+## Feature Engineering Strategy
+
+We will create a focused set of engineered features during preprocessing. All features will be created on the training set and applied consistently to validation and test sets.
+
+### Base Features (Already in Dataset)
+- **Audio:** tempo, loudness, danceability, energy, duration
+- **Musical:** key, mode, time_signature
+- **Metadata:** year, artist_name
+- **Target:** song_hotttnesss (for Question 2 only)
+
+### Engineered Features
+
+**1. Timbre & Pitch Aggregates**
+- Mean and standard deviation of 12 timbre coefficients → 2 features
+- Mean and standard deviation of 12 pitch values → 2 features
+- *Rationale:* Reduces 24 dimensions to 4 interpretable features
+
+**2. Temporal Features**
+- `decade`: group year into decades (1960s, 1970s, etc.)
+- `years_since_release`: 2025 - year
+- *Rationale:* Captures music trends over time
+
+**3. Categorical Encoding**
+- `key`: One-hot encoding → 12 binary features
+- `mode`: Keep as binary (major=1, minor=0)
+
+**4. Normalization**
+- StandardScaler for all continuous features (tempo, loudness, duration, etc.)
+- Fit on training set, apply to validation/test sets
+
+**Total Features:** ~30-35 features after engineering
+
+### Feature Selection
+- Remove highly correlated features (r > 0.95) to avoid multicollinearity
+- For Question 1 only: Apply PCA to reduce to ~15-20 components (retain 90% variance)
+
+
+- **Question 1 — Genre Classification**
+  
+  **Goal:** Predict the genre label (obtained from artist_terms or merged from FMA dataset). We aim for at least 65 percent classification accuracy as a baseline for satisfactory model performance.
+  
+  **Variables Used:**
+  danceability, energy, tempo, loudness, key, mode, time_signature, duration, year.
+  
+  **Features:**
+  - All audio features + engineered features listed above
+  - **Exclude:** song_hotttnesss (popularity is not available at prediction time)
+  
+  **Modeling Approach:**
+  - Apply dimensionality reduction (PCA).
+  - Train classification models: Random Forest, Gradient Boosting, and Neural Network.
+  - Evaluate accuracy, precision, recall, and F1-score.
+
+  **Handling Class Imbalance** 
+
+  If genre distribution is uneven after labeling:
+
+  Strategy:
+  - **Balanced genres (≥200 songs each):** Use stratified splitting, no special handling
+  - **Imbalanced genres (50-199 songs):** Apply class weights in Random Forest and XGBoost
+     - `class_weight='balanced'` parameter adjusts for imbalance
+  - **Rare genres (<50 songs):** Combine into "Other" category or exclude from analysis
+
+  **Evaluation Adjustments:**
+  - Report **weighted F1-score** as primary metric (accounts for class imbalance)
+  - Include per-class precision and recall in confusion matrix analysis
+  - Avoid using overall accuracy alone (can be misleading with imbalance)
+  
+  **Visualization Plan:**
+  1. **Confusion Matrix Heatmap**
+   - Shows classification performance across all genres
+   - Identifies which genres are commonly confused
+   - **Priority: ESSENTIAL** - directly answers "how accurate is our classifier?"
+
+  2. **Feature Importance Bar Chart**
+   - Top 15 features ranked by importance in Random Forest/XGBoost
+   - Shows which audio features best predict genre
+   - **Priority: ESSENTIAL** - answers "what makes genres different?"
+
+  3. **PCA Scatter Plot (2D)**
+   - Songs plotted using top 2 principal components, colored by genre
+   - Visualizes genre separability in feature space
+   - **Priority: HIGH** - shows if genres are naturally clustered
+
+  4. **Genre Distribution Bar Chart**
+   - Number of songs per genre in the dataset
+   - Shows class balance/imbalance
+   - **Priority: MEDIUM** - provides context for results
+
+- **Question 2 — Popularity Prediction**
+  
+  **Goal:** Model song_hotttnesss as a continuous variable. A model achieving R² above 0.45 will be considered meaningfully predictive.
+  
+  **Variables Used:**
+  Same audio features as above, plus artist_terms_weight, year, duration.
+
+  **Features:**
+  - Same features as Question 1
+  - **Target variable:** song_hotttnesss
+  
+  **Modeling Approach:**
+  - Linear Regression, Random Forest Regressor, and XGBoost.
+  - Evaluate with RMSE and R² metrics.
+  
+  **Visualization Plan:**
+  1. **Actual vs. Predicted Scatter Plot**
+   - Predicted popularity vs. true popularity with regression line
+   - Shows model accuracy visually
+   - **Priority: ESSENTIAL** - directly shows prediction quality
+
+  2. **Feature Importance Bar Chart**
+   - Top 15 features for popularity prediction
+   - Shows what makes songs popular
+   - **Priority: ESSENTIAL** - answers the research question
+
+  3. **Residual Plot**
+   - Prediction errors vs. predicted values
+   - Identifies systematic biases or patterns in errors
+   - **Priority: HIGH** - validates model assumptions
+
+**Cross-Analysis Visualization (Required):**
+- **Genre-Popularity Box Plot:** Distribution of popularity scores across genres
+
+- **Optional Visualizations (if time permits):**
+  - Audio Feature Evolution over decades
+  - Model Performance Comparison Table
+
+**Presentation Visualizations Plan**
+
+For the final presentation (Dec. 15), we will select **4-5 visualizations**:
+- Confusion matrix (Question 1)
+- Feature importance for genre (Question 1)
+- Actual vs. predicted (Question 2)
+- Feature importance for popularity (Question 2)
+- Genre-popularity relationship (Cross-analysis)
+
+**External Data**
+
+Optionally, we'll merge Spotify API audio features to cross-check and expand the dataset, especially for missing or inconsistent fields (danceability, valence, energy).
+
+By combining metadata and extracted audio features with comprehensive visualizations, this project will demonstrate how machine learning can reveal musical patterns and predict real-world outcomes such as genre and popularity.
 
 ## Weekly Plan of Attack
 
@@ -109,10 +378,10 @@ By combining metadata and extracted audio features, this project will demonstrat
   * Use the models to train samples of the data and evaluation their performance 
 - **Week of Nov. 24: Begin Rigorous Testing on Chosen Models / Thanksgiving**
   * Chose the final models to use for the project
-  * Begin training them and test the models more indepthly and rigorously.
+  * Begin training them and test the models more in-depth and rigorously.
 - **Week of Dec. 1: Continue Testing and Training of the Models**
   * Continue the in-depth training and testing of the model and their outcomes and comparing it to our questions
-  * Address possible overfitting by using cross-validation techniques by spitting the data into parts and test eaqh seperately for their outcomes. If overfitting is found we can use data simplification 
+  * Address possible overfitting by using cross-validation techniques by splitting the data into parts and test each seperately for their outcomes. If overfitting is found we can use data simplification 
     to cut down on the number of features being used for the dataset.
   * Start evaluating the models and their outcomes based on our questions and their accuracy.
 - **Week of Dec. 8: Creating Project Artifacts**
