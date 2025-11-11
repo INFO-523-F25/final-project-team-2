@@ -112,6 +112,8 @@ By combining metadata and extracted audio features, this project will demonstrat
   * Begin training them and test the models more indepthly and rigorously.
 - **Week of Dec. 1: Continue Testing and Training of the Models**
   * Continue the in-depth training and testing of the model and their outcomes and comparing it to our questions
+  * Address possible overfitting by using cross-validation techniques by spitting the data into parts and test eaqh seperately for their outcomes. If overfitting is found we can use data simplification 
+    to cut down on the number of features being used for the dataset.
   * Start evaluating the models and their outcomes based on our questions and their accuracy.
 - **Week of Dec. 8: Creating Project Artifacts**
   * Start work on the presentations of the project and its findings
