@@ -6,14 +6,18 @@ website:
   navbar:
     right:
       - icon: github
-        href: https://github.com/INFO-523-SU24/final-project # Need to change to your project repo
+        href: https://github.com/INFO-523-F25/final-project-team-2 # Need to change to your project repo
     left:
       - text: Project
         href: index.qmd
       - text: Proposal
         href: proposal.qmd
       - text: Presentation
-        href: presentation.qmd
+        menu:
+          - text: Question 1
+            href: finalProjectJupyterPart1.ipynb
+          - text: Question 2
+            href: finalProjectJupyterPart2.ipynb
       - text: About
         href: about.qmd
 
