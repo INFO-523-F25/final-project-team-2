@@ -13,11 +13,7 @@ website:
       - text: Proposal
         href: proposal.qmd
       - text: Presentation
-        menu:
-          - text: Question 1
-            href: finalProjectJupyterPart1.ipynb
-          - text: Question 2
-            href: finalProjectJupyterPart2.ipynb
+        href: presentation.ipynb
       - text: About
         href: about.qmd
 
