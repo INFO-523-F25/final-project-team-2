@@ -13,7 +13,7 @@ website:
       - text: Proposal
         href: proposal.qmd
       - text: Presentation
-        href: presentation.qmd
+        href: presentation.ipynb
       - text: About
         href: about.qmd
 
