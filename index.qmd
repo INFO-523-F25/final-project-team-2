@@ -2,7 +2,7 @@
 title: "Project Title"
 subtitle: "INFO 523 - Final Project"
 author: 
-  - name: "Team name - Team member 1, Team member 2,..."
+  - name: "Team 2- Kim Rosema, Elsie Bold, David Kennedy"
     affiliations:
       - name: "College of Information Science, University of Arizona"
 description: "Project description"
@@ -36,3 +36,245 @@ Question 2 - Popularity Prediction: Which audio and metadata features are most p
 Using feature engineering, machine learning models, and exploratory data analysis, this project demonstrates how combining multiple large-scale music datasets can reveal meaningful patterns in music and popularity.
 
 
+# Final Project Write-up
+
+## Abstract
+
+This project explores music genre classification and audio feature analysis using a subset of the Million Song Dataset (MSD) and the Spotify Tracks Genre Dataset from Kaggle. The MSD subset contains 10,000 songs with 53 audio and metadata features, while the Spotify dataset provides labeled genres for supervised classification.
+
+Machine learning models—including Random Forest, Gradient Boosting, and Neural Networks—were applied to predict song genres. Regression models, including Linear Regression, Random Forest, and XGBoost, were used to predict song popularity (`song_hotttnesss`).
+
+Visualizations such as confusion matrices, feature importance charts, scatter plots, and genre–popularity distributions were used to reveal patterns in the data and validate model performance. This project demonstrates how combining multiple large-scale music datasets with machine learning can uncover meaningful musical patterns and predict both genre and popularity.
+
+---
+
+## Introduction
+
+Music is a universal form of expression, and advances in digital audio analysis enable large-scale study of songs. In this project, we use two datasets:
+
+- A subset of the **Million Song Dataset (MSD)** with 10,000 songs and 53 audio and metadata features  
+- The **Spotify Tracks Genre Dataset**, which provides labeled genres for supervised classification  
+
+We address two research questions:
+
+1. **Genre Classification**: Can a song’s genre be accurately predicted from its audio features?  
+2. **Popularity Prediction**: Which audio and metadata features are most predictive of a song’s popularity (`song_hotttnesss`)?
+
+Using feature engineering, machine learning models, and exploratory data analysis (EDA), this project demonstrates how combining multiple large-scale music datasets can reveal meaningful patterns in music and popularity.
+
+---
+
+## Question 1: Genre Classification
+
+### Data Selection and EDA
+
+Our team initially approached the research questions in reverse order. During exploratory analysis of the MSD subset, we observed that while the dataset contained features useful for predicting popularity, it lacked both genre labels and sufficient features for genre classification.
+
+To address this limitation, we identified the **Spotify Tracks Genre Dataset** from Kaggle:
+
+<https://www.kaggle.com/datasets/thedevastator/spotify-tracks-genre-dataset/data>
+
+This dataset contains approximately 114,000 songs, 114 genre labels, and 20 features (mostly numerical, with limited categorical data).
+
+Key EDA findings:
+- Energy was strongly correlated with acousticness and loudness  
+- Only three missing values were identified and removed  
+- Outliers were retained, as they were considered natural variations rather than data errors  
+
+---
+
+### Random Forest Classifier
+
+The Random Forest model attempted to classify songs into **114 genres** using 15 audio features.
+
+**Performance:**
+- Training accuracy: **74.58%**
+- Test accuracy: **32.59%**
+
+This large gap indicates substantial overfitting. While 32.59% accuracy is far above random chance (<1% for 114 classes), the model failed to generalize well.
+
+**Feature Importance:**
+- Popularity (15.67%)
+- Duration
+- Acousticness
+- Danceability
+- Speechiness
+
+Popularity, a social metric rather than a pure audio feature, emerged as the most influential predictor, suggesting that genre is influenced by cultural context in addition to sound.
+
+**Genre-Specific Performance:**
+- Strong performance on distinctive genres:  
+  - Study (89.06%)
+  - Grindcore (88.50%)
+  - Sleep (85.79%)
+  - Comedy (83.77%)
+- Poor performance on broad or culturally defined genres:  
+  - Singer-songwriter (1.55%)
+  - Alt-rock (1.86%)
+  - Electronic (2.00%)
+  - Reggae (3.09%)
+
+**Conclusion:**  
+Audio features alone are insufficient to accurately classify songs across 114 fine-grained genres. Genre reflects cultural, historical, and subjective factors not captured by audio characteristics alone.
+
+---
+
+### Gradient Boosting Classifier
+
+A Gradient Boosting Classifier was trained on **91,199 songs** across 114 genres using 15 audio features.
+
+**Model Configuration:**
+- Estimators: 100  
+- Learning rate: 0.1  
+- Max depth: 3  
+- Subsample: 0.8  
+
+**Performance:**
+- Test accuracy: **31.11%**
+
+This result is more than 30 times better than random chance, confirming that audio features contain meaningful genre signals despite the complexity.
+
+**Most Important Features:**
+- Popularity (25.16%)
+- Duration (13.26%)
+- Acousticness (9.37%)
+- Danceability (7.65%)
+- Tempo (7.31%)
+
+**Interpretation:**  
+Genre classification is constrained by overlapping boundaries and subjective labels. The dominance of popularity suggests that genre perception is partially market-driven.
+
+**Conclusion:**  
+Audio features can classify genres with moderate success, but fine-grained classification remains challenging without additional metadata or hierarchical grouping.
+
+---
+
+### Neural Network (MLP)
+
+A neural network was implemented using `MLPClassifier` from `sklearn`.
+
+**Preprocessing:**
+- Removed all non-numerical features  
+- Applied `StandardScaler`  
+- One-hot encoded the categorical genre target  
+
+**Performance:**
+- Test accuracy: **32.17%**
+
+**Interpretation:**  
+Performance is comparable to tree-based models. Genre overlap (e.g., alt-rock, alternative, indie) likely limits accuracy. Grouping similar genres could improve results.
+
+---
+
+### Overall Genre Classification Comparison
+
+| Model | Test Accuracy | Key Issue | Takeaway |
+|------|--------------|-----------|----------|
+| Random Forest | 32.59% | Severe overfitting | Learns patterns but fails to generalize |
+| Gradient Boosting | 31.11% | Limited fine-grained capacity | Stable and interpretable |
+| Neural Network (MLP) | 32.17% | Genre overlap | Comparable accuracy with higher complexity |
+
+All models converge around **31–33% accuracy**, far above random chance but indicative of the intrinsic difficulty of fine-grained genre prediction.
+
+---
+
+## Question 2: Popularity Prediction
+
+### Linear Regression
+
+The linear regression model achieved modest predictive performance:
+
+- **R² (train/test): ~0.38**
+- **RMSE (train): 0.197**
+- **RMSE (test): 0.189**
+
+The near-identical train and test performance indicates strong generalization.
+
+**Key Coefficients:**
+- Artist hotness: 0.099
+- Year: 0.078
+- Loudness: 0.022
+- Mode: -0.004
+
+Audio features such as tempo, key, duration, and time signature contributed minimally.
+
+**Conclusion:**  
+Song popularity is largely driven by non-acoustic factors such as artist reputation and timing.
+
+---
+
+### Random Forest Regressor
+
+**Features Used:**
+- `artist_hotttnesss`
+- `mode`, `mode_confidence`
+- `key`, `key_confidence`
+- `tempo`
+- `loudness`
+- `time_signature`
+
+**Performance:**
+- MSE: 0.041  
+- RMSE: 0.203  
+- R²: 0.284  
+
+The model performed moderately but showed heavy reliance on `artist_hotttnesss`.
+
+---
+
+### XGBoost Regressor
+
+An XGBoost model was trained on 5,648 songs.
+
+**Performance:**
+- Train R²: 0.78  
+- Test R²: 0.446  
+- Test RMSE: 0.198  
+
+**Top Features:**
+- Artist familiarity (19.7%)
+- Year (9.0%)
+- Artist hotness (4.6%)
+
+All individual audio features contributed less than 1.2%.
+
+**Implications:**
+- Popularity is driven by context, not audio quality  
+- Established artists benefit from cumulative advantage  
+- Marketing and cultural factors dominate  
+
+---
+
+### Overall Popularity Model Comparison
+
+| Model | Test R² | Train R² | Test RMSE | Overfitting |
+|------|--------|---------|-----------|-------------|
+| XGBoost | 0.446 | 0.780 | 0.1976 | High |
+| Linear Regression | 0.376 | 0.372 | 0.189 | None |
+| Random Forest | 0.284 | 0.902 | 0.203 | Severe |
+
+---
+
+## Final Conclusions
+
+- **Best predictive performance:** XGBoost (R² = 0.446)  
+- **Most reliable and interpretable:** Linear Regression (no overfitting, lowest RMSE)  
+- **Unreliable:** Random Forest due to extreme overfitting  
+
+Popularity depends far more on **artist reputation and timing** than on intrinsic musical characteristics.
+
+---
+
+## AI Use & Attribution
+
+> **AI Use & Attribution**: This project used Claude (Anthropic Sonnet 4.5) on 2025-12-16 for model comparisons for Question 2.  
+> All data analysis decisions, implementation, and final interpretations were completed by the team.  
+> Risks (hallucinations, data leakage, licensing) were mitigated through manual review and documentation.
+
+> **AI Use & Attribution**: This project used ChatGPT (GPT-5) on 2025-12-15 for model comparisons for Question 1.  
+> All data analysis decisions, implementation, and final interpretations were completed by the team.  
+> Risks (hallucinations, data leakage, licensing) were mitigated through manual review and documentation.
+
+> **AI Use & Attribution**: This project used Claude (Anthropic Sonnet 4.5) on 2025-12-11 for assistance interpreting XGBoost outputs and structuring the summary.  
+> All data analysis decisions, implementation, and final interpretations were completed by the team.  
+> Risks (hallucinations, data leakage, licensing) were mitigated through manual review and documentation.
