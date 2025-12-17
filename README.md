@@ -12,16 +12,26 @@ This project utilizes data mining and a subset of the Million Song Dataset (MSD)
 [Million Song Dataset](http://millionsongdataset.com/)  
 Thierry Bertin-Mahieux, Daniel P.W. Ellis, Brian Whitman, and Paul Lamere. 
 The Million Song Dataset. In Proceedings of the 12th International Society
-for Music Information Retrieval Conference (ISMIR 2011), 2011.
+for Music Information Retrieval Conference (ISMIR 2011), 2011.  
+  
+[Spotify Tracks Genres](https://www.kaggle.com/datasets/zaheenhamidani/ultimate-spotify-tracks-db)  
+Zaheen Hamidani. Ultimate Spotify Tracks DB. Kaggle. 2020.  
   
 ## Installation Instructions  
-*TODO*
+pip install -r requirements.txt
 
 ## Code Structure  
-*TODO*
+Project is structured as follows:
+- `data/` : Contains raw and processed data files.
+- `README.md` : Project overview and instructions. 
+- `proposal.md` : Project proposal document.
+- `index.qmd` : Main analysis and results document.
+- `presentation.qmd` : Presentation of findings.
+- `about.md` : Information about the authors.
+- `requirements.txt` : List of required Python packages. 
 
 ## Results and Evaluation
-*TODO*
+Results and evaluation details can be found in the index.qmd and presentation.qmd files.
 
 ## Authors
 - Kim Rosema
