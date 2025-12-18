@@ -26,12 +26,12 @@ Project is structured as follows:
 - `README.md` : Project overview and instructions. 
 - `proposal.md` : Project proposal document.
 - `index.qmd` : Main analysis and results document.
-- `presentation.qmd` : Presentation of findings.
+- `team2presentation.ipynb` : Presentation of project and findings.
 - `about.md` : Information about the authors.
 - `requirements.txt` : List of required Python packages. 
 
 ## Results and Evaluation
-Results and evaluation details can be found in the index.qmd and presentation.qmd files.
+Results and evaluation details can be found in the index.qmd and team2presentation.ipynb files.
 
 ## Authors
 - Kim Rosema
